@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImgHost - Cloud Image Hosting & Subscription Platform</title>
+
+  <!-- Favicon: Custom ImgHost Cloud & Upload Emblem -->
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='bgGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234E5EE4'/%3E%3Cstop offset='100%25' stop-color='%231B1D3E'/%3E%3C/linearGradient%3E%3ClinearGradient id='arrowGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334D399'/%3E%3Cstop offset='100%25' stop-color='%2310B981'/%3E%3C/linearGradient%3E%3Cfilter id='dropShadow' x='-10%25' y='-10%25' width='130%25' height='130%25'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='2' flood-opacity='0.25'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bgGrad)'/%3E%3Cg filter='url(%23dropShadow)' transform='translate(6, 8)'%3E%3Cpath d='M14 36C8.477 36 4 31.523 4 26C4 20.985 7.693 16.832 12.536 16.103C14.195 8.943 20.678 3.5 28.375 3.5C37.005 3.5 44 10.495 44 19.125C48.142 19.125 51.5 22.483 51.5 26.625C51.5 30.767 48.142 34.125 44 34.125H14' stroke='%2338BDF8' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M26.5 34V22M26.5 22L21.5 27M26.5 22L31.5 27' stroke='url(%23arrowGrad)' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/g%3E%3C/svg%3E"
+  />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            themeBg: '#F0F3FD',
+            themeNavy: '#1B1D3E',
+            themePrimary: '#4E5EE4',
+            themeBorder: '#E4E9F7',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F0F3FD;
+      color: #1B1D3E;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      20%, 60% { transform: rotate(14deg); }
+      40%, 80% { transform: rotate(-14deg); }
+    }
+    .animate-wave {
+      display: inline-block;
+      animation: wave 1.8s infinite;
+      transform-origin: 70% 70%;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-start text-[#1B1D3E]">
+
+  <header class="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E4E9F7] px-4 py-3 flex items-center justify-between shadow-xs">
+    <div class="flex items-center space-x-2.5">
+      <div class="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
+        <svg viewBox="0 0 40 32" fill="none" class="w-8 h-8">
+          <path
+            d="M10 26C5.58172 26 2 22.4183 2 18C2 13.9878 4.95471 10.6657 8.8288 10.0827C10.1557 4.35478 15.3421 0 21.5 0C28.4036 0 34 5.59644 34 12.5C37.3137 12.5 40 15.1863 40 18.5C40 21.8137 37.3137 24.5 34 24.5H10"
+            stroke="#0EA5E9"
+            stroke-width="3.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M20 22V14M20 14L16.5 17.5M20 14L23.5 17.5"
+            stroke="#10B981"
+            stroke-width="3.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <span class="text-[21px] font-extrabold tracking-tight text-[#1B1D3E]">
+        Img<span class="text-[#1B1D3E]">Host</span>
+      </span>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <button
+        onclick="triggerFileUpload()"
+        class="w-9 h-9 rounded-xl bg-[#EEF2FF] text-[#4E5EE4] flex items-center justify-center font-bold active:scale-95 transition"
+        title="Quick Upload"
+      >
+        <i data-lucide="plus" class="w-5 h-5"></i>
+      </button>
+      <button
+        onclick="toggleMobileDrawer(true)"
+        class="w-9 h-9 rounded-xl bg-[#F8FAFD] border border-[#E4E9F7] text-[#1B1D3E] flex items-center justify-center active:scale-95 transition"
+        title="Open Navigation"
+      >
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <div id="mobileDrawer" class="fixed inset-0 z-50 lg:hidden hidden">
+    <div
+      onclick="toggleMobileDrawer(false)"
+      class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+    ></div>
+    <div class="fixed inset-y-0 left-0 max-w-[310px] w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+      <div class="flex items-center justify-between pb-2">
+        <span class="text-xs font-bold text-[#8292B4] uppercase tracking-wider">Navigation</span>
+        <button
+          onclick="toggleMobileDrawer(false)"
+          class="p-1.5 rounded-xl hover:bg-[#F0F3FD] text-[#64748B]"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Navigation Buttons -->
+      <div class="space-y-6 flex-1 pt-4">
+        <nav class="space-y-1.5">
+          <button
+            onclick="switchTab('dashboard'); toggleMobileDrawer(false);"
+            id="mobileNavDashboard"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm bg-[#EEF2FF] text-[#4E5EE4]"
+          >
+            <i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i>
+            <span>Dashboard</span>
+          </button>
+          <button
+            onclick="switchTab('images'); toggleMobileDrawer(false);"
+            id="mobileNavImages"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm text-[#64748B] hover:bg-[#F8FAFC]"
+          >
+            <i data-lucide="image" class="w-[18px] h-[18px]"></i>
+            <span>My Images</span>
+            <span id="mobileImagesCountBadge" class="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#E2E8F0] text-[#475569] font-medium">2</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Mobile Sidebar Footer Items -->
+      <div class="space-y-3 pt-4 border-t border-[#F1F5F9]">
+        <div class="bg-[#F8FAFD] border border-[#E9EFFD] rounded-2xl p-4">
+          <div class="flex items-center justify-between text-xs mb-3">
+            <div class="flex items-center space-x-2 text-[#475569] font-medium">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-[#4E5EE4]"></i>
+              <span>Storage</span>
+            </div>
+            <span id="mobilePlanBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#EEF2FF] text-[#4E5EE4]">Free</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden mb-2">
+            <div id="mobileStorageProgressBar" class="bg-[#4E5EE4] h-full rounded-full transition-all duration-500" style="width: 4%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-[#64748B] font-medium">
+            <span id="mobileStorageUsedLabel">0.0 MB used</span>
+            <span id="mobileStorageTotalLabel">100.0 MB</span>
+          </div>
+        </div>
+
+        <button
+          onclick="openUpgradeModal(); toggleMobileDrawer(false);"
+          class="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-2xl border border-[#DDE4F8] bg-white hover:bg-[#EEF2FF] text-[#4E5EE4] font-bold text-xs tracking-wide transition shadow-sm"
+        >
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#4E5EE4]"></i>
+          <span>Upgrade Plan</span>
+        </button>
+
+        <button
+          onclick="openPayoutSettings(); toggleMobileDrawer(false);"
+          class="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFD] hover:bg-[#EEF2FF] text-[#1B1D3E] font-medium text-xs transition"
+        >
+          <span class="flex items-center space-x-2 truncate">
+            <i data-lucide="building-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+            <span class="truncate">Merchant Account (UPI)</span>
+          </span>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100/70 px-1.5 py-0.5 rounded flex-shrink-0">Active</span>
+        </button>
+
+        <div
+          onclick="openTokenModal(); toggleMobileDrawer(false);"
+          class="bg-[#EEF2FF] rounded-2xl p-3 flex items-center space-x-3 border border-[#E0E7FF] cursor-pointer"
+        >
+          <div class="w-10 h-10 rounded-xl bg-[#4E5EE4] text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 uppercase">N</div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-bold text-[#1B1D3E] truncate">nitu maurya</h4>
+            <p class="text-[11px] text-[#64748B] truncate">mauryanitu578@gmail.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full max-w-[1520px] mx-auto p-3 sm:p-5 md:p-6 lg:p-7 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch flex-1 pb-16 lg:pb-6">
+
+    <!-- DESKTOP LEFT SIDEBAR -->
+    <aside class="hidden lg:flex lg:col-span-3 bg-white rounded-[28px] p-6 shadow-sm border border-[#E4E9F7] flex-col justify-between self-start sticky top-6">
+      <div class="space-y-6">
+        <!-- Logo -->
+        <div class="flex items-center space-x-2.5">
+          <div class="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 40 32" fill="none" class="w-8 h-8">
+              <path
+                d="M10 26C5.58172 26 2 22.4183 2 18C2 13.9878 4.95471 10.6657 8.8288 10.0827C10.1557 4.35478 15.3421 0 21.5 0C28.4036 0 34 5.59644 34 12.5C37.3137 12.5 40 15.1863 40 18.5C40 21.8137 37.3137 24.5 34 24.5H10"
+                stroke="#0EA5E9"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M20 22V14M20 14L16.5 17.5M20 14L23.5 17.5"
+                stroke="#10B981"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="text-[22px] font-extrabold tracking-tight text-[#1B1D3E]">
+            Img<span class="text-[#1B1D3E]">Host</span>
+          </span>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="space-y-1.5 pt-2">
+          <button
+            onclick="switchTab('dashboard')"
+            id="desktopNavDashboard"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 bg-[#EEF2FF] text-[#4E5EE4]"
+          >
+            <i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i>
+            <span>Dashboard</span>
+          </button>
+          <button
+            onclick="switchTab('images')"
+            id="desktopNavImages"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#1B1D3E]"
+          >
+            <i data-lucide="image" class="w-[18px] h-[18px]"></i>
+            <span>My Images</span>
+            <span id="desktopImagesCountBadge" class="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#E2E8F0] text-[#475569] font-medium">2</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Storage, Upgrades & Profile Footer -->
+      <div class="space-y-3 pt-6">
+        <!-- Storage Card -->
+        <div class="bg-[#F8FAFD] border border-[#E9EFFD] rounded-2xl p-4">
+          <div class="flex items-center justify-between text-xs mb-3">
+            <div class="flex items-center space-x-2 text-[#475569] font-medium">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-[#4E5EE4]"></i>
+              <span>Storage</span>
+            </div>
+            <span id="desktopPlanBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#EEF2FF] text-[#4E5EE4]">Free</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden mb-2">
+            <div id="desktopStorageProgressBar" class="bg-[#4E5EE4] h-full rounded-full transition-all duration-500" style="width: 4%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-[#64748B] font-medium">
+            <span id="desktopStorageUsedLabel">0.0 MB used</span>
+            <span id="desktopStorageTotalLabel">100.0 MB</span>
+          </div>
+        </div>
+
+        <!-- Upgrade Plan Button -->
+        <button
+          onclick="openUpgradeModal()"
+          class="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-2xl border border-[#DDE4F8] bg-white hover:bg-[#EEF2FF] text-[#4E5EE4] font-bold text-xs tracking-wide transition shadow-sm active:scale-98"
+        >
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#4E5EE4]"></i>
+          <span>Upgrade Plan</span>
+        </button>
+
+        <!-- Merchant Payout Destination Button -->
+        <button
+          onclick="openPayoutSettings()"
+          class="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFD] hover:bg-[#EEF2FF] text-[#1B1D3E] font-medium text-xs transition"
+        >
+          <span class="flex items-center space-x-2 truncate">
+            <i data-lucide="building-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+            <span class="truncate">Merchant Account (UPI)</span>
+          </span>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100/70 px-1.5 py-0.5 rounded flex-shrink-0">Active</span>
+        </button>
+
+        <!-- Profile Card -->
+        <div
+          onclick="openTokenModal()"
+          class="bg-[#EEF2FF] rounded-2xl p-3 flex items-center space-x-3 border border-[#E0E7FF] cursor-pointer hover:bg-[#E0E7FF]/70 transition"
+          title="Click to view Auth & Role settings"
+        >
+          <div class="w-10 h-10 rounded-xl bg-[#4E5EE4] text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 uppercase">N</div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-bold text-[#1B1D3E] truncate">nitu maurya</h4>
+            <p class="text-[11px] text-[#64748B] truncate">mauryanitu578@gmail.com</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="w-full lg:col-span-6 space-y-5 sm:space-y-6">
+      <!-- Greeting Header -->
+      <div class="pt-1 sm:pt-0">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1B1D3E] flex items-center space-x-2">
+          <span>Good afternoon, nitu</span>
+          <span class="animate-wave origin-bottom-right">👋</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-[#64748B] mt-1 font-medium">
+          Here's an overview of your image library.
+        </p>
+      </div>
+
+      <!-- 4 Stat Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <!-- Card 1: Total Images -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 border border-[#E4E9F7] shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#EEF2FF] flex items-center justify-center text-[#4E5EE4] mb-3 sm:mb-4">
+            <i data-lucide="image" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </div>
+          <div>
+            <span id="statTotalImages" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1B1D3E] block tracking-tight">2</span>
+            <span class="text-[11px] sm:text-xs text-[#64748B] font-medium mt-0.5 block truncate">Total Images</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Storage Used -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 border border-[#E4E9F7] shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center text-[#8B5CF6] mb-3 sm:mb-4">
+            <i data-lucide="hard-drive" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </div>
+          <div>
+            <span id="statStorageUsed" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1B1D3E] block tracking-tight truncate">4.2MB</span>
+            <span class="text-[11px] sm:text-xs text-[#64748B] font-medium mt-0.5 block truncate">Storage Used</span>
+          </div>
+        </div>
+
+        <!-- Card 3: This Month -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 border border-[#E4E9F7] shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#ECFDF5] flex items-center justify-center text-[#10B981] mb-3 sm:mb-4">
+            <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </div>
+          <div>
+            <span id="statThisMonth" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1B1D3E] block tracking-tight">2</span>
+            <span class="text-[11px] sm:text-xs text-[#64748B] font-medium mt-0.5 block truncate">This Month</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Shareable Links -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 border border-[#E4E9F7] shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#FFFBEB] flex items-center justify-center text-[#F59E0B] mb-3 sm:mb-4">
+            <i data-lucide="link-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </div>
+          <div>
+            <span id="statShareableLinks" class="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1B1D3E] block tracking-tight">2</span>
+            <span class="text-[11px] sm:text-xs text-[#64748B] font-medium mt-0.5 block truncate">Shareable Links</span>
+          </div>
+        </div>
+      </div>
+
+      <section id="dashboardTabView" class="space-y-3">
+        <h2 class="text-sm sm:text-base font-bold text-[#1B1D3E]">Upload Image</h2>
+
+        <!-- Hidden input for file upload -->
+        <input
+          id="fileInputElement"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          onchange="handleFilesSelected(event)"
+        />
+
+        <div
+          id="dropzoneContainer"
+          onclick="triggerFileUpload()"
+          class="bg-white rounded-3xl border-2 border-dashed border-[#D5DEFB] hover:border-[#4E5EE4] p-5 sm:p-8 md:p-10 text-center cursor-pointer transition-all duration-200 group flex flex-col items-center justify-center min-h-[190px] sm:min-h-[240px] shadow-sm active:scale-[0.99]"
+        >
+          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#F0F3FD] group-hover:bg-[#EEF2FF] flex items-center justify-center text-[#8292B4] group-hover:text-[#4E5EE4] mb-3 transition-colors">
+            <i data-lucide="upload-cloud" class="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.75]"></i>
+          </div>
+
+          <p class="text-sm sm:text-base font-bold text-[#1B1D3E] group-hover:text-[#4E5EE4] transition-colors">
+            Drop your image here
+          </p>
+          <p class="text-[11px] sm:text-xs text-[#8292B4] mt-1 font-medium px-4 max-w-sm">
+            or click to browse &bull; PNG, JPG, GIF, WebP up to <span id="maxFileSizeLabel">10</span>MB
+          </p>
+
+          <div class="mt-3.5 inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#F0F3FD] text-[10px] sm:text-[11px] font-semibold text-[#4E5EE4]">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Instant CDN link generation</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="imagesTabView" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <h2 class="text-sm sm:text-base font-bold text-[#1B1D3E]">All Uploaded Files</h2>
+          <div class="relative w-full sm:w-56">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              type="text"
+              id="gallerySearchInput"
+              placeholder="Search files..."
+              oninput="renderGalleryImages()"
+              class="w-full bg-white border border-[#E4E9F7] rounded-xl pl-8 pr-3 py-2 sm:py-1.5 text-xs text-[#1B1D3E] placeholder-[#94A3B8] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+        </div>
+
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </section>
+
+      <!-- Mobile Recent Uploads Section -->
+      <div class="block lg:hidden bg-white rounded-3xl p-5 border border-[#E4E9F7] shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2 text-[#1B1D3E]">
+            <i data-lucide="clock" class="w-4 h-4 text-[#4E5EE4]"></i>
+            <h3 class="text-sm font-bold tracking-tight">Recent Uploads</h3>
+          </div>
+          <span id="mobileRecentFilesCount" class="text-[11px] font-semibold text-[#64748B]">2 files</span>
+        </div>
+        <div id="mobileRecentUploadsList" class="space-y-3 max-h-[300px] overflow-y-auto pr-1"></div>
+      </div>
+    </main>
+
+    <aside class="hidden lg:flex lg:col-span-3 bg-white rounded-[28px] p-6 shadow-sm border border-[#E4E9F7] self-start sticky top-6 flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2 text-[#1B1D3E]">
+          <i data-lucide="clock" class="w-4 h-4 text-[#4E5EE4]"></i>
+          <h3 class="text-sm font-bold tracking-tight">Recent Uploads</h3>
+        </div>
+        <span id="desktopRecentFilesCount" class="text-[11px] font-semibold text-[#64748B]">2 files</span>
+      </div>
+
+      <div id="desktopRecentUploadsList" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+        <!-- Rendered via JS -->
+      </div>
+    </aside>
+
+  </div>
+
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E4E9F7] px-6 py-2 flex items-center justify-around shadow-lg">
+    <button
+      onclick="switchTab('dashboard')"
+      id="bottomBarDashboard"
+      class="flex flex-col items-center py-1 transition text-[#4E5EE4]"
+    >
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold mt-0.5">Dashboard</span>
+    </button>
+
+    <button
+      onclick="triggerFileUpload()"
+      class="w-10 h-10 -mt-4 rounded-full bg-[#4E5EE4] text-white flex items-center justify-center shadow-md active:scale-95 transition"
+      title="Upload image"
+    >
+      <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+    </button>
+
+    <button
+      onclick="switchTab('images')"
+      id="bottomBarImages"
+      class="flex flex-col items-center py-1 transition text-[#8292B4]"
+    >
+      <i data-lucide="image" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold mt-0.5">Images</span>
+    </button>
+  </div>
+
+  <div id="upgradeModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/45 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-[#F8FAFD] rounded-[32px] max-w-4xl w-full p-4 sm:p-7 md:p-9 shadow-2xl border border-[#E2E8F0] space-y-6 my-auto relative">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="text-xl sm:text-2xl font-black text-[#1B1D3E] tracking-tight">Upgrade Plan</h3>
+          <p class="text-xs sm:text-sm text-[#64748B] mt-1">Choose the plan that fits your storage and sharing needs.</p>
+        </div>
+        <button
+          onclick="closeUpgradeModal()"
+          class="p-2 rounded-xl hover:bg-white text-[#64748B] hover:text-[#1B1D3E] border border-transparent hover:border-[#E2E8F0] transition"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 3 Plan Cards Container -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-4 items-stretch pt-3">
+        <!-- CARD 1: FREE -->
+        <div class="relative rounded-[28px] p-6 sm:p-7 flex flex-col justify-between bg-white border border-[#E5EBF5] hover:border-[#CBD5E1] shadow-sm">
+          <div>
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 bg-emerald-50 text-emerald-500">
+              <i data-lucide="zap" class="w-6 h-6 fill-current stroke-current"></i>
+            </div>
+            <h4 class="text-base font-bold text-[#1B1D3E] tracking-tight">Free</h4>
+            <div class="mt-2.5 mb-4 flex items-baseline">
+              <span class="text-3xl sm:text-4xl font-extrabold text-[#1B1D3E] tracking-tight">Free</span>
+            </div>
+            <div class="space-y-1.5 mb-6">
+              <div class="w-full bg-[#EEF2FF] h-1.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-emerald-500" style="width: 14%;"></div>
+              </div>
+              <p class="text-xs text-[#64748B] font-medium">100 MB Storage</p>
+            </div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 stroke-[2.5]"></i>
+                <span>100 MB Storage</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 stroke-[2.5]"></i>
+                <span>Unlimited Uploads</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 stroke-[2.5]"></i>
+                <span>Shareable Links</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 stroke-[2.5]"></i>
+                <span>Basic Support</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pt-2">
+            <button
+              id="freePlanActionBtn"
+              onclick="initiateCheckout('FREE')"
+              class="w-full py-3 rounded-2xl border border-[#D0DBF5] bg-white text-[#5468FF] font-bold text-xs shadow-xs text-center"
+            >
+              Current Plan
+            </button>
+          </div>
+        </div>
+
+        <!-- CARD 2: PRO (MOST POPULAR) -->
+        <div class="relative rounded-[28px] p-6 sm:p-7 flex flex-col justify-between bg-white border-2 border-[#5468FF] shadow-indigo-100 shadow-lg">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+            <span class="bg-[#6366F1] text-white text-[11px] font-bold px-3.5 py-1 rounded-full shadow-sm tracking-wide">Most Popular</span>
+          </div>
+          <div>
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 bg-indigo-50 text-[#6366F1]">
+              <i data-lucide="sparkles" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-base font-bold text-[#1B1D3E] tracking-tight">Pro</h4>
+            <div class="mt-2.5 mb-4 flex items-baseline">
+              <span class="text-3xl sm:text-4xl font-extrabold text-[#1B1D3E] tracking-tight">Free</span>
+            </div>
+            <div class="space-y-1.5 mb-6">
+              <div class="w-full bg-[#EEF2FF] h-1.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#6366F1]" style="width: 32%;"></div>
+              </div>
+              <p class="text-xs text-[#64748B] font-medium">500 MB Storage</p>
+            </div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#6366F1] stroke-[2.5]"></i>
+                <span>500 MB Storage</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#6366F1] stroke-[2.5]"></i>
+                <span>Unlimited Uploads</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#6366F1] stroke-[2.5]"></i>
+                <span>Shareable Links</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#6366F1] stroke-[2.5]"></i>
+                <span>Priority Support</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#6366F1] stroke-[2.5]"></i>
+                <span>No Watermarks</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pt-2">
+            <button
+              id="proPlanActionBtn"
+              onclick="initiateCheckout('PRO')"
+              class="w-full py-3 rounded-2xl border border-[#D0DBF5] bg-white hover:bg-[#EEF2FF] text-[#5468FF] font-bold text-xs transition active:scale-[0.98] text-center"
+            >
+              Default
+            </button>
+          </div>
+        </div>
+
+        <!-- CARD 3: BUSINESS (₹ 2 / month) -->
+        <div class="relative rounded-[28px] p-6 sm:p-7 flex flex-col justify-between bg-white border border-[#E5EBF5] hover:border-[#CBD5E1] shadow-sm">
+          <div>
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 bg-amber-50 text-amber-500">
+              <i data-lucide="crown" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-base font-bold text-[#1B1D3E] tracking-tight">Business</h4>
+            <div class="mt-2.5 mb-4 flex items-baseline">
+              <span class="text-3xl sm:text-4xl font-extrabold text-[#1B1D3E] tracking-tight">₹ 2</span>
+              <span class="text-xs sm:text-sm font-semibold text-[#64748B] ml-1">/month</span>
+            </div>
+            <div class="space-y-1.5 mb-6">
+              <div class="w-full bg-[#EEF2FF] h-1.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#EA3829]" style="width: 50%;"></div>
+              </div>
+              <p class="text-xs text-[#64748B] font-medium">1 GB Storage</p>
+            </div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>2 GB Storage</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>Unlimited Uploads</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>Shareable Links</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>Priority Support</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>No Watermarks</span>
+              </li>
+              <li class="flex items-center space-x-2.5 text-xs font-semibold text-[#334155]">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA3829] stroke-[2.5]"></i>
+                <span>Custom Branding</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pt-2">
+            <button
+              id="bizPlanActionBtn"
+              onclick="initiateCheckout('BUSINESS')"
+              class="w-full py-3 rounded-2xl bg-gradient-to-r from-[#EA3829] to-[#D92D20] hover:from-[#D92D20] hover:to-[#B42318] text-white font-bold text-xs shadow-md shadow-red-200 active:scale-[0.98] transition text-center"
+            >
+              Get Business
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkoutModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/55 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-[32px] max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-[#E2E8F0] space-y-4 my-auto relative">
+      <div class="flex items-start justify-between pb-3 border-b border-[#F1F5F9]">
+        <div>
+          <span class="text-[11px] font-bold text-[#4E5EE4] uppercase tracking-wider">Direct Checkout</span>
+          <h3 id="checkoutModalPlanTitle" class="text-lg sm:text-xl font-black text-[#1B1D3E] tracking-tight">Upgrade to Business Plan</h3>
+        </div>
+        <button onclick="closeCheckoutModal()" class="p-1.5 rounded-xl hover:bg-[#F0F3FD] text-[#64748B] transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Plan Pricing Summary -->
+      <div class="bg-[#F8FAFD] border border-[#E4E9F7] rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <h4 id="checkoutSummaryPlanName" class="text-sm font-bold text-[#1B1D3E]">Business Tier</h4>
+          <p id="checkoutSummaryStorageLabel" class="text-xs text-[#64748B] mt-0.5">1 GB Storage &bull; Instant Activation</p>
+        </div>
+        <div class="text-right">
+          <span id="checkoutSummaryAmount" class="text-xl font-black text-[#1B1D3E]">₹ 2</span>
+          <span class="text-[11px] text-[#64748B] block">per month</span>
+        </div>
+      </div>
+
+      <!-- Owner Direct Payout Banner -->
+      <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center space-x-2.5 text-xs text-emerald-900">
+        <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600 flex-shrink-0"></i>
+        <div class="leading-snug text-[11px]">
+          Money credits directly to: <strong id="checkoutMerchantVpaDisplay" class="font-mono text-emerald-800">mauryanitu578@okhdfcbank</strong> (<span id="checkoutMerchantNameDisplay">Nitu Maurya</span>)
+        </div>
+      </div>
+
+      <!-- Payment Method Toggle -->
+      <div>
+        <label class="text-xs font-bold text-[#1B1D3E] block mb-2">Select Payment Method</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            id="tabMethodUpi"
+            onclick="setPaymentMethod('upi')"
+            class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#4E5EE4] bg-[#EEF2FF] text-[#4E5EE4] font-bold shadow-xs"
+          >
+            <i data-lucide="qr-code" class="w-5 h-5"></i>
+            <span class="text-xs">UPI / QR</span>
+          </button>
+          <button
+            type="button"
+            id="tabMethodCard"
+            onclick="setPaymentMethod('card')"
+            class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#E2E8F0] hover:bg-[#F8FAFD] text-[#64748B]"
+          >
+            <i data-lucide="credit-card" class="w-5 h-5"></i>
+            <span class="text-xs">Card</span>
+          </button>
+          <button
+            type="button"
+            id="tabMethodBank"
+            onclick="setPaymentMethod('bank')"
+            class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#E2E8F0] hover:bg-[#F8FAFD] text-[#64748B]"
+          >
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+            <span class="text-xs">NetBanking</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- UPI Content Pane -->
+      <div id="methodSectionUpi" class="space-y-3.5 p-4 bg-[#F8FAFD] rounded-2xl border border-[#E4E9F7]">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-[#1B1D3E]">Scan with Any UPI App</span>
+          <span class="text-emerald-600 font-semibold flex items-center gap-1.5 text-[11px]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Instant Transfer
+          </span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3.5 bg-white p-3.5 rounded-xl border border-[#E2E8F0]">
+          <div class="p-2 bg-white rounded-xl shadow-xs border border-[#E2E8F0] flex-shrink-0">
+            <img
+              id="dynamicUpiQrImg"
+              src=""
+              alt="UPI QR Code"
+              class="w-24 h-24 object-contain"
+            />
+          </div>
+
+          <div class="flex-1 min-w-0 text-center sm:text-left">
+            <div class="text-[11px] font-semibold text-[#64748B]">Merchant VPA ID</div>
+            <div id="merchantVpaCode" class="font-mono text-xs font-bold text-[#1B1D3E] truncate select-all">
+              mauryanitu578@okhdfcbank
+            </div>
+
+            <div class="flex items-center justify-center sm:justify-start gap-2 mt-2">
+              <button
+                type="button"
+                onclick="copyUpiVpa()"
+                class="inline-flex items-center space-x-1 px-2.5 py-1 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4E5EE4] rounded-lg text-[11px] font-bold transition"
+              >
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span id="copyUpiText">Copy UPI</span>
+              </button>
+
+              <a
+                id="upiDeepLinkButton"
+                href="#"
+                target="_blank"
+                class="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-bold transition"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>Pay in App</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-[#64748B] block mb-1">
+            Or enter your UPI ID (GPay, PhonePe, Paytm, BHIM)
+          </label>
+          <input
+            type="text"
+            id="buyerUpiInput"
+            placeholder="e.g. mobileNumber@ybl or username@oksbi"
+            class="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+          />
+        </div>
+      </div>
+
+      <!-- Card Content Pane -->
+      <div id="methodSectionCard" class="space-y-3 p-4 bg-[#F8FAFD] rounded-2xl border border-[#E4E9F7] hidden">
+        <div>
+          <label class="text-[11px] font-semibold text-[#64748B] block mb-1">Card Number</label>
+          <input
+            type="text"
+            value="4111 2222 3333 4444"
+            class="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[11px] font-semibold text-[#64748B] block mb-1">Valid Thru</label>
+            <input
+              type="text"
+              value="08/29"
+              class="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-[#64748B] block mb-1">CVV</label>
+            <input
+              type="password"
+              value="123"
+              maxlength="4"
+              class="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Net Banking Content Pane -->
+      <div id="methodSectionBank" class="space-y-3 p-4 bg-[#F8FAFD] rounded-2xl border border-[#E4E9F7] hidden">
+        <label class="text-[11px] font-semibold text-[#64748B] block">Select Bank</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button type="button" class="flex items-center space-x-2 p-2.5 rounded-xl border border-[#4E5EE4] bg-[#EEF2FF] text-[#4E5EE4] font-bold text-left">
+            <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+            <span class="truncate text-xs">HDFC Bank</span>
+          </button>
+          <button type="button" class="flex items-center space-x-2 p-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[#1B1D3E] text-left hover:bg-slate-50">
+            <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+            <span class="truncate text-xs">State Bank of India</span>
+          </button>
+          <button type="button" class="flex items-center space-x-2 p-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[#1B1D3E] text-left hover:bg-slate-50">
+            <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+            <span class="truncate text-xs">ICICI Bank</span>
+          </button>
+          <button type="button" class="flex items-center space-x-2 p-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[#1B1D3E] text-left hover:bg-slate-50">
+            <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+            <span class="truncate text-xs">Axis Bank</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pay Button -->
+      <div class="pt-2">
+        <button
+          type="button"
+          id="confirmPaymentButton"
+          onclick="executePaymentProcess()"
+          class="w-full py-3.5 rounded-2xl bg-[#4E5EE4] hover:bg-[#3E4CD4] text-white font-bold text-xs shadow-lg shadow-indigo-100 flex items-center justify-center space-x-2 active:scale-[0.98] transition cursor-pointer"
+        >
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span id="confirmPayBtnText">Pay & Activate Now</span>
+        </button>
+        <p class="text-[10px] text-center text-[#94A3B8] mt-2 font-medium">
+          Direct Settlement &bull; 256-Bit SSL Encrypted
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentSuccessModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/55 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-[32px] max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[#E2E8F0] space-y-4 my-auto relative text-center">
+      <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-1">
+        <i data-lucide="check" class="w-7 h-7 stroke-[3]"></i>
+      </div>
+
+      <h3 class="text-xl font-black text-[#1B1D3E]">Payment Received!</h3>
+      <p class="text-xs text-[#64748B]">
+        The subscription is now active, and the funds have been settled directly to your account.
+      </p>
+
+      <div class="bg-[#F8FAFD] border border-[#E4E9F7] rounded-2xl p-4 text-left space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-[#64748B]">Plan:</span>
+          <span id="receiptPlanName" class="font-bold text-[#1B1D3E]">Business</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[#64748B]">Amount Paid:</span>
+          <span id="receiptAmount" class="font-bold text-[#1B1D3E]">₹ 2</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[#64748B]">Txn ID:</span>
+          <span id="receiptTxnId" class="font-mono text-[#1B1D3E]">TXN_98741</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[#64748B]">Credited To:</span>
+          <span id="receiptDestination" class="font-mono text-emerald-700 font-bold">mauryanitu578@okhdfcbank</span>
+        </div>
+      </div>
+
+      <button
+        onclick="closePaymentSuccessModal()"
+        class="w-full py-3 bg-[#4E5EE4] text-white font-bold text-xs rounded-xl hover:bg-[#3E4CD4] transition"
+      >
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div id="payoutSettingsModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/45 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-[32px] max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-[#E2E8F0] space-y-4 my-auto relative">
+      <div class="flex items-start justify-between pb-3 border-b border-[#F1F5F9]">
+        <div>
+          <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Owner Account Setup</span>
+          <h3 class="text-lg sm:text-xl font-black text-[#1B1D3E] tracking-tight">Where Money Comes In</h3>
+          <p class="text-xs text-[#64748B] mt-0.5">Update the UPI ID and Bank Details where user subscriptions are paid.</p>
+        </div>
+        <button onclick="closePayoutSettings()" class="p-1.5 rounded-xl hover:bg-[#F0F3FD] text-[#64748B] transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <label class="text-xs font-bold text-[#1B1D3E] block mb-1">Your Direct UPI ID (VPA)</label>
+          <input
+            type="text"
+            id="settingsMerchantUpiInput"
+            value="mauryanitu578@okhdfcbank"
+            class="w-full bg-[#F8FAFD] border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+          />
+          <span class="text-[10px] text-[#64748B] mt-1 block">All user payments settle immediately to this address.</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-[#1B1D3E] block mb-1">Account Holder Name</label>
+            <input
+              type="text"
+              id="settingsMerchantNameInput"
+              value="Nitu Maurya"
+              class="w-full bg-[#F8FAFD] border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[#1B1D3E] block mb-1">Bank Name</label>
+            <input
+              type="text"
+              id="settingsMerchantBankInput"
+              value="HDFC Bank Ltd"
+              class="w-full bg-[#F8FAFD] border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-[#1B1D3E] block mb-1">Account Number</label>
+            <input
+              type="text"
+              id="settingsMerchantAccNumInput"
+              value="XXXX-XXXX-8912"
+              class="w-full bg-[#F8FAFD] border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[#1B1D3E] block mb-1">IFSC Code</label>
+            <input
+              type="text"
+              id="settingsMerchantIfscInput"
+              value="HDFC0001234"
+              class="w-full bg-[#F8FAFD] border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs font-mono text-[#1B1D3E] focus:outline-none focus:border-[#4E5EE4]"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button
+          type="button"
+          onclick="saveMerchantPayoutSettings()"
+          class="px-5 py-2.5 bg-[#4E5EE4] hover:bg-[#3E4CD4] text-white text-xs font-bold rounded-xl active:scale-95 transition"
+        >
+          Save Payout Config
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tokenModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/40 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-[#E4E9F7] space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="key" class="w-5 h-5 text-[#4E5EE4]"></i>
+          <h3 class="text-base font-extrabold text-[#1B1D3E]">Auth & JWT Session</h3>
+        </div>
+        <button onclick="closeTokenModal()" class="p-1 rounded-lg hover:bg-[#F0F3FD] text-[#64748B]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-[#64748B]">Simulated Bearer token carrying user claims, roles, and storage quotas.</p>
+      <div>
+        <label class="text-xs font-bold text-[#1B1D3E] block mb-1">Simulated JWT Header</label>
+        <div id="tokenJwtHeaderContent" class="p-3 bg-[#F8FAFD] rounded-xl border border-[#E4E9F7] font-mono text-[10px] sm:text-[11px] text-[#475569] break-all select-all">
+          Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXVyeWFuaXR1NTc4QGdtYWlsLmNvbSIsInJvbGUiOiJjcmVhdG9yIiwicGxhbiI6IkZSRUUifQ==.sig_demo99
+        </div>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button onclick="closeTokenModal()" class="px-4 py-2 bg-[#4E5EE4] text-white text-xs font-bold rounded-xl active:scale-95">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="imageDetailModal" class="fixed inset-0 z-50 bg-[#1B1D3E]/40 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-[#E4E9F7] space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="imageModalTitle" class="text-xs sm:text-sm font-bold text-[#1B1D3E] truncate">image.jpg</h3>
+        <button onclick="closeImageDetailModal()" class="p-1 rounded-lg hover:bg-[#F0F3FD] text-[#64748B]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="aspect-video bg-[#F0F3FD] rounded-2xl overflow-hidden border border-[#E4E9F7] flex items-center justify-center">
+        <img id="imageModalPreview" src="" alt="preview" class="w-full h-full object-contain" />
+      </div>
+
+      <div class="space-y-3 pt-1">
+        <div>
+          <label class="text-[11px] font-bold text-[#64748B] block mb-1">Direct CDN URL</label>
+          <div class="flex items-center space-x-2">
+            <input id="imageModalDirectUrl" type="text" readonly class="flex-1 bg-[#F8FAFD] border border-[#E4E9F7] rounded-xl px-3 py-2 text-xs text-[#1B1D3E] font-mono truncate" />
+            <button onclick="copyElementValue('imageModalDirectUrl')" class="px-3.5 py-2 bg-[#4E5EE4] hover:bg-[#3B49B6] text-white rounded-xl text-xs font-bold flex-shrink-0">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-[#64748B] block mb-1">Markdown Embed</label>
+          <div class="flex items-center space-x-2">
+            <input id="imageModalMdEmbed" type="text" readonly class="flex-1 bg-[#F8FAFD] border border-[#E4E9F7] rounded-xl px-3 py-2 text-xs text-[#1B1D3E] font-mono truncate" />
+            <button onclick="copyElementValue('imageModalMdEmbed')" class="px-3.5 py-2 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4E5EE4] rounded-xl text-xs font-bold flex-shrink-0">
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-xs">
+        <button id="togglePrivacyBtn" onclick="toggleSelectedImagePrivacy()" class="text-[#64748B] hover:text-[#1B1D3E] font-medium">
+          Status: <span id="imageModalVisibilityBadge" class="font-bold text-[#4E5EE4]">Public</span>
+        </button>
+        <button id="deleteImageBtn" onclick="deleteSelectedImage()" class="text-rose-500 hover:text-rose-600 font-bold p-1">
+          Delete File
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="toastBox"
+    class="fixed bottom-16 lg:bottom-6 right-4 sm:right-6 z-50 bg-[#1B1D3E] text-white text-xs font-semibold py-2.5 px-4 rounded-2xl shadow-xl flex items-center space-x-2 hidden transition-all duration-300"
+  >
+    <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0"></i>
+    <span id="toastMessage">Action completed!</span>
+  </div>
+
+  <script>
+    /* State Definitions */
+    const PLANS = {
+      FREE: {
+        id: 'FREE',
+        name: 'Free',
+        displayPrice: 'Free',
+        priceUnit: '',
+        storageMB: 100,
+        storageLabel: '100 MB Storage',
+        maxFileSizeMB: 10,
+        numericPrice: 0,
+      },
+      PRO: {
+        id: 'PRO',
+        name: 'Pro',
+        displayPrice: 'Free',
+        priceUnit: '',
+        storageMB: 500,
+        storageLabel: '500 MB Storage',
+        maxFileSizeMB: 35,
+        numericPrice: 0,
+      },
+      BUSINESS: {
+        id: 'BUSINESS',
+        name: 'Business',
+        displayPrice: '₹ 2',
+        priceUnit: '/month',
+        storageMB: 1024,
+        storageLabel: '1 GB Storage',
+        maxFileSizeMB: 100,
+        numericPrice: 2,
+      },
+    };
+
+    let user = {
+      name: 'nitu maurya',
+      email: 'mauryanitu578@gmail.com',
+      role: 'creator',
+      plan: 'FREE',
+    };
+
+    let merchantConfig = {
+      upiId: 'mauryanitu578@okhdfcbank',
+      accountHolder: 'Nitu Maurya',
+      bankName: 'HDFC Bank Ltd',
+      accountNumber: 'XXXX-XXXX-8912',
+      ifsc: 'HDFC0001234',
+    };
+
+    let images = [
+      {
+        id: 'img_sample_1',
+        name: 'neon-tokyo.jpg',
+        url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80',
+        sizeKB: 2420,
+        createdAt: 'Today, 11:20 AM',
+        month: 'current',
+        isPublic: true,
+      },
+      {
+        id: 'img_sample_2',
+        name: 'minimal-mountain.jpg',
+        url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+        sizeKB: 1840,
+        createdAt: 'Yesterday',
+        month: 'current',
+        isPublic: true,
+      },
+    ];
+
+    let currentTab = 'dashboard';
+    let checkoutPlan = null;
+    let paymentMethod = 'upi';
+    let activeModalImage = null;
+    let toastTimeout = null;
+
+    function showToast(message) {
+      const toastBox = document.getElementById('toastBox');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+      toastBox.classList.remove('hidden');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastBox.classList.add('hidden');
+      }, 3000);
+      lucide.createIcons();
+    }
+
+    function copyToClipboard(text) {
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast('Copied to clipboard!');
+    }
+
+    function copyElementValue(elementId) {
+      const el = document.getElementById(elementId);
+      if (el) copyToClipboard(el.value);
+    }
+
+    function toggleMobileDrawer(open) {
+      const drawer = document.getElementById('mobileDrawer');
+      if (open) {
+        drawer.classList.remove('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const dashboardView = document.getElementById('dashboardTabView');
+      const imagesView = document.getElementById('imagesTabView');
+
+      const dNavDash = document.getElementById('desktopNavDashboard');
+      const dNavImg = document.getElementById('desktopNavImages');
+      const mNavDash = document.getElementById('mobileNavDashboard');
+      const mNavImg = document.getElementById('mobileNavImages');
+      const bNavDash = document.getElementById('bottomBarDashboard');
+      const bNavImg = document.getElementById('bottomBarImages');
+
+      if (tab === 'dashboard') {
+        dashboardView.classList.remove('hidden');
+        imagesView.classList.add('hidden');
+
+        // Styles
+        dNavDash.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 bg-[#EEF2FF] text-[#4E5EE4]';
+        dNavImg.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#1B1D3E]';
+        mNavDash.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm bg-[#EEF2FF] text-[#4E5EE4]';
+        mNavImg.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm text-[#64748B] hover:bg-[#F8FAFC]';
+        bNavDash.className = 'flex flex-col items-center py-1 transition text-[#4E5EE4]';
+        bNavImg.className = 'flex flex-col items-center py-1 transition text-[#8292B4]';
+      } else {
+        dashboardView.classList.add('hidden');
+        imagesView.classList.remove('hidden');
+
+        // Styles
+        dNavDash.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#1B1D3E]';
+        dNavImg.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 bg-[#EEF2FF] text-[#4E5EE4]';
+        mNavDash.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm text-[#64748B] hover:bg-[#F8FAFC]';
+        mNavImg.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-semibold text-sm bg-[#EEF2FF] text-[#4E5EE4]';
+        bNavDash.className = 'flex flex-col items-center py-1 transition text-[#8292B4]';
+        bNavImg.className = 'flex flex-col items-center py-1 transition text-[#4E5EE4]';
+
+        renderGalleryImages();
+      }
+      lucide.createIcons();
+    }
+
+    function calculateStats() {
+      const planInfo = PLANS[user.plan] || PLANS.FREE;
+      const totalKB = images.reduce((acc, img) => acc + img.sizeKB, 0);
+      const usedMB = (totalKB / 1024).toFixed(1);
+      const maxKB = planInfo.storageMB * 1024;
+      const percentage = Math.min(100, Math.max(3, (totalKB / maxKB) * 100)).toFixed(0);
+
+      // Stat cards
+      document.getElementById('statTotalImages').textContent = images.length;
+      document.getElementById('statStorageUsed').textContent = totalKB > 1024 ? `${usedMB}MB` : `${totalKB}KB`;
+      document.getElementById('statThisMonth').textContent = images.filter(img => img.month === 'current').length;
+      document.getElementById('statShareableLinks').textContent = images.filter(img => img.isPublic).length;
+
+      // Sidebar storage indicators
+      document.getElementById('desktopPlanBadge').textContent = planInfo.name;
+      document.getElementById('mobilePlanBadge').textContent = planInfo.name;
+      document.getElementById('desktopStorageUsedLabel').textContent = `${usedMB} MB used`;
+      document.getElementById('mobileStorageUsedLabel').textContent = `${usedMB} MB used`;
+      document.getElementById('desktopStorageTotalLabel').textContent = `${planInfo.storageMB}.0 MB`;
+      document.getElementById('mobileStorageTotalLabel').textContent = `${planInfo.storageMB}.0 MB`;
+      document.getElementById('desktopStorageProgressBar').style.width = `${percentage}%`;
+      document.getElementById('mobileStorageProgressBar').style.width = `${percentage}%`;
+
+      // Upload max size label
+      document.getElementById('maxFileSizeLabel').textContent = planInfo.maxFileSizeMB;
+
+      // Badges
+      document.getElementById('desktopImagesCountBadge').textContent = images.length;
+      document.getElementById('mobileImagesCountBadge').textContent = images.length;
+      document.getElementById('desktopRecentFilesCount').textContent = `${images.length} ${images.length === 1 ? 'file' : 'files'}`;
+      document.getElementById('mobileRecentFilesCount').textContent = `${images.length} ${images.length === 1 ? 'file' : 'files'}`;
+
+      // Refresh plan buttons in Upgrade Modal
+      updateUpgradeModalButtons();
+    }
+
+    function updateUpgradeModalButtons() {
+      const freeBtn = document.getElementById('freePlanActionBtn');
+      const proBtn = document.getElementById('proPlanActionBtn');
+      const bizBtn = document.getElementById('bizPlanActionBtn');
+
+      if (!freeBtn || !proBtn || !bizBtn) return;
+
+      freeBtn.textContent = user.plan === 'FREE' ? 'Current Plan' : 'Select Free';
+      proBtn.textContent = user.plan === 'PRO' ? 'Current Plan' : 'Default';
+      bizBtn.textContent = user.plan === 'BUSINESS' ? 'Current Plan' : 'Get Business';
+    }
+
+    function renderRecentUploads() {
+      const desktopList = document.getElementById('desktopRecentUploadsList');
+      const mobileList = document.getElementById('mobileRecentUploadsList');
+
+      if (images.length === 0) {
+        const emptyHtml = `
+          <div class="flex-1 flex flex-col items-center justify-center text-center py-10 px-4">
+            <div class="w-12 h-12 rounded-full bg-[#F0F3FD] flex items-center justify-center text-[#8292B4] mb-2">
+              <i data-lucide="image" class="w-5 h-5 opacity-60"></i>
+            </div>
+            <p class="text-xs text-[#8292B4] font-medium">No recent uploads.</p>
+          </div>
+        `;
+        desktopList.innerHTML = emptyHtml;
+        mobileList.innerHTML = emptyHtml;
+        lucide.createIcons();
+        return;
+      }
+
+      const itemsHtml = images.slice(0, 6).map(img => `
+        <div
+          onclick="openImageDetailModal('${img.id}')"
+          class="p-2.5 rounded-2xl border border-[#F0F3FD] hover:border-[#D5DEFB] bg-[#F8FAFD]/70 hover:bg-[#F8FAFD] transition flex items-center space-x-3 cursor-pointer group active:scale-[0.99]"
+        >
+          <img src="${img.url}" alt="${img.name}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-[#E4E9F7]" />
+          <div class="flex-1 min-w-0">
+            <h5 class="text-xs font-bold text-[#1B1D3E] truncate group-hover:text-[#4E5EE4] transition-colors">${img.name}</h5>
+            <p class="text-[10px] text-[#8292B4] mt-0.5">${img.sizeKB} KB &bull; ${img.createdAt}</p>
+          </div>
+          <button
+            onclick="event.stopPropagation(); copyToClipboard('${img.url}')"
+            class="p-2 rounded-xl text-[#8292B4] hover:text-[#4E5EE4] hover:bg-white transition"
+            title="Copy Link"
+          >
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join('');
+
+      desktopList.innerHTML = itemsHtml;
+      mobileList.innerHTML = itemsHtml;
+      lucide.createIcons();
+    }
+
+    function renderGalleryImages() {
+      const search = (document.getElementById('gallerySearchInput')?.value || '').toLowerCase();
+      const galleryGrid = document.getElementById('galleryGrid');
+      const filtered = images.filter(img => img.name.toLowerCase().includes(search));
+
+      if (filtered.length === 0) {
+        galleryGrid.innerHTML = `
+          <div class="col-span-2 bg-white rounded-3xl p-8 sm:p-12 text-center border border-[#E4E9F7] text-slate-400 text-xs">
+            No matching images in library.
+          </div>
+        `;
+        return;
+      }
+
+      galleryGrid.innerHTML = filtered.map(img => `
+        <div class="bg-white border border-[#E4E9F7] rounded-2xl overflow-hidden shadow-sm hover:shadow transition group flex flex-col justify-between">
+          <div onclick="openImageDetailModal('${img.id}')" class="aspect-video relative bg-[#F8FAFD] cursor-pointer overflow-hidden">
+            <img src="${img.url}" alt="${img.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md ${img.isPublic ? 'bg-white/90 text-[#10B981]' : 'bg-slate-900/80 text-amber-300'}">
+              ${img.isPublic ? 'Public CDN' : 'Private'}
+            </span>
+          </div>
+
+          <div class="p-3 sm:p-3.5">
+            <h4 onclick="openImageDetailModal('${img.id}')" class="text-xs font-bold text-[#1B1D3E] truncate hover:text-[#4E5EE4] cursor-pointer">
+              ${img.name}
+            </h4>
+            <p class="text-[11px] text-[#8292B4] mt-0.5">${img.sizeKB} KB &bull; ${img.createdAt}</p>
+
+            <div class="pt-2.5 mt-2.5 border-t border-[#F1F5F9] flex items-center justify-between text-xs">
+              <button
+                onclick="copyToClipboard('${img.url}')"
+                class="text-[#4E5EE4] hover:text-[#3B49B6] font-bold text-[11px] flex items-center space-x-1 py-1"
+              >
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>Copy URL</span>
+              </button>
+
+              <div class="flex items-center space-x-1">
+                <button
+                  onclick="toggleImagePrivacy('${img.id}')"
+                  class="text-[#8292B4] hover:text-[#1B1D3E] text-[11px] px-2 py-1 rounded bg-[#F8FAFD]"
+                >
+                  ${img.isPublic ? 'Make Private' : 'Make Public'}
+                </button>
+                <button
+                  onclick="deleteImageById('${img.id}')"
+                  class="text-slate-400 hover:text-rose-500 p-1.5"
+                  title="Delete"
+                >
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('fileInputElement').click();
+    }
+
+    function handleFilesSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select a valid image file');
+        return;
+      }
+
+      const planInfo = PLANS[user.plan] || PLANS.FREE;
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > planInfo.maxFileSizeMB) {
+        showToast(`File exceeds plan limit (${planInfo.maxFileSizeMB} MB)`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newImg = {
+          id: 'img_' + Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          url: e.target.result,
+          sizeKB: Math.round(file.size / 1024),
+          createdAt: 'Just now',
+          month: 'current',
+          isPublic: true,
+        };
+        images.unshift(newImg);
+        calculateStats();
+        renderRecentUploads();
+        renderGalleryImages();
+        showToast('Image uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    /* Drag & Drop listeners */
+    const dropzone = document.getElementById('dropzoneContainer');
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('border-[#4E5EE4]', 'bg-[#F8FAFD]');
+      }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('border-[#4E5EE4]', 'bg-[#F8FAFD]');
+      }, false);
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files.length > 0) {
+        handleFilesSelected({ target: { files: files, value: '' } });
+      }
+    });
+
+    /* Image management actions */
+    function deleteImageById(id) {
+      images = images.filter(img => img.id !== id);
+      calculateStats();
+      renderRecentUploads();
+      renderGalleryImages();
+      showToast('Image removed from library.');
+    }
+
+    function toggleImagePrivacy(id) {
+      images = images.map(img => img.id === id ? { ...img, isPublic: !img.isPublic } : img);
+      calculateStats();
+      renderGalleryImages();
+      showToast('Visibility updated.');
+    }
+
+    function openUpgradeModal() {
+      updateUpgradeModalButtons();
+      document.getElementById('upgradeModal').classList.remove('hidden');
+      document.getElementById('upgradeModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeUpgradeModal() {
+      document.getElementById('upgradeModal').classList.add('hidden');
+      document.getElementById('upgradeModal').classList.remove('flex');
+    }
+
+    function initiateCheckout(planId) {
+      if (user.plan === planId) {
+        showToast(`You are currently on the ${PLANS[planId].name} plan.`);
+        return;
+      }
+      checkoutPlan = PLANS[planId];
+      closeUpgradeModal();
+      openCheckoutModal();
+    }
+
+    function openCheckoutModal() {
+      if (!checkoutPlan) return;
+
+      document.getElementById('checkoutModalPlanTitle').textContent = `Upgrade to ${checkoutPlan.name} Plan`;
+      document.getElementById('checkoutSummaryPlanName').textContent = `${checkoutPlan.name} Tier`;
+      document.getElementById('checkoutSummaryStorageLabel').textContent = `${checkoutPlan.storageLabel} • Instant Activation`;
+      document.getElementById('checkoutSummaryAmount').textContent = checkoutPlan.displayPrice === 'Free' ? '₹ 0' : checkoutPlan.displayPrice;
+      document.getElementById('confirmPayBtnText').textContent = `Pay ${checkoutPlan.displayPrice === 'Free' ? '₹ 0' : checkoutPlan.displayPrice} & Activate Now`;
+
+      // Update merchant display
+      document.getElementById('checkoutMerchantVpaDisplay').textContent = merchantConfig.upiId;
+      document.getElementById('checkoutMerchantNameDisplay').textContent = merchantConfig.accountHolder;
+      document.getElementById('merchantVpaCode').textContent = merchantConfig.upiId;
+
+      // Generate dynamic QR and UPI deep link
+      const amount = checkoutPlan.numericPrice;
+      const payeeName = encodeURIComponent(merchantConfig.accountHolder || 'ImgHost');
+      const payeeVpa = encodeURIComponent(merchantConfig.upiId || 'mauryanitu578@okhdfcbank');
+      const note = encodeURIComponent(`ImgHost ${checkoutPlan.name} Subscription`);
+      const upiDeepLink = `upi://pay?pa=${payeeVpa}&pn=${payeeName}&am=${amount}&cu=INR&tn=${note}`;
+
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiDeepLink)}&color=1b1d3e&bgcolor=ffffff`;
+      document.getElementById('dynamicUpiQrImg').src = qrUrl;
+      document.getElementById('upiDeepLinkButton').href = upiDeepLink;
+
+      setPaymentMethod('upi');
+      document.getElementById('checkoutModal').classList.remove('hidden');
+      document.getElementById('checkoutModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+      document.getElementById('checkoutModal').classList.remove('flex');
+    }
+
+    function setPaymentMethod(method) {
+      paymentMethod = method;
+      const tabUpi = document.getElementById('tabMethodUpi');
+      const tabCard = document.getElementById('tabMethodCard');
+      const tabBank = document.getElementById('tabMethodBank');
+
+      const secUpi = document.getElementById('methodSectionUpi');
+      const secCard = document.getElementById('methodSectionCard');
+      const secBank = document.getElementById('methodSectionBank');
+
+      [tabUpi, tabCard, tabBank].forEach(btn => {
+        btn.className = 'p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#E2E8F0] hover:bg-[#F8FAFD] text-[#64748B]';
+      });
+
+      secUpi.classList.add('hidden');
+      secCard.classList.add('hidden');
+      secBank.classList.add('hidden');
+
+      if (method === 'upi') {
+        tabUpi.className = 'p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#4E5EE4] bg-[#EEF2FF] text-[#4E5EE4] font-bold shadow-xs';
+        secUpi.classList.remove('hidden');
+      } else if (method === 'card') {
+        tabCard.className = 'p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#4E5EE4] bg-[#EEF2FF] text-[#4E5EE4] font-bold shadow-xs';
+        secCard.classList.remove('hidden');
+      } else {
+        tabBank.className = 'p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1.5 border-[#4E5EE4] bg-[#EEF2FF] text-[#4E5EE4] font-bold shadow-xs';
+        secBank.classList.remove('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function copyUpiVpa() {
+      copyToClipboard(merchantConfig.upiId);
+      const textSpan = document.getElementById('copyUpiText');
+      textSpan.textContent = 'Copied!';
+      setTimeout(() => { textSpan.textContent = 'Copy UPI'; }, 2000);
+    }
+
+    function executePaymentProcess() {
+      const btn = document.getElementById('confirmPaymentButton');
+      const origContent = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `
+        <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+        <span>Verifying with Bank & Depositing...</span>
+      `;
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = origContent;
+        user.plan = checkoutPlan.id;
+        calculateStats();
+
+        // Populate receipt
+        const txnId = 'TXN_' + Math.random().toString(36).substring(2, 9).toUpperCase();
+        document.getElementById('receiptPlanName').textContent = checkoutPlan.name;
+        document.getElementById('receiptAmount').textContent = checkoutPlan.displayPrice === 'Free' ? '₹ 0' : checkoutPlan.displayPrice;
+        document.getElementById('receiptTxnId').textContent = txnId;
+        document.getElementById('receiptDestination').textContent = merchantConfig.upiId;
+
+        closeCheckoutModal();
+        document.getElementById('paymentSuccessModal').classList.remove('hidden');
+        document.getElementById('paymentSuccessModal').classList.add('flex');
+        showToast(`Payment Successful! Deposited to ${merchantConfig.upiId}`);
+        lucide.createIcons();
+      }, 1600);
+    }
+
+    function closePaymentSuccessModal() {
+      document.getElementById('paymentSuccessModal').classList.add('hidden');
+      document.getElementById('paymentSuccessModal').classList.remove('flex');
+    }
+
+    /* Payout Settings Modal */
+    function openPayoutSettings() {
+      document.getElementById('settingsMerchantUpiInput').value = merchantConfig.upiId;
+      document.getElementById('settingsMerchantNameInput').value = merchantConfig.accountHolder;
+      document.getElementById('settingsMerchantBankInput').value = merchantConfig.bankName;
+      document.getElementById('settingsMerchantAccNumInput').value = merchantConfig.accountNumber;
+      document.getElementById('settingsMerchantIfscInput').value = merchantConfig.ifsc;
+
+      document.getElementById('payoutSettingsModal').classList.remove('hidden');
+      document.getElementById('payoutSettingsModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closePayoutSettings() {
+      document.getElementById('payoutSettingsModal').classList.add('hidden');
+      document.getElementById('payoutSettingsModal').classList.remove('flex');
+    }
+
+    function saveMerchantPayoutSettings() {
+      merchantConfig.upiId = document.getElementById('settingsMerchantUpiInput').value.trim() || merchantConfig.upiId;
+      merchantConfig.accountHolder = document.getElementById('settingsMerchantNameInput').value.trim() || merchantConfig.accountHolder;
+      merchantConfig.bankName = document.getElementById('settingsMerchantBankInput').value.trim() || merchantConfig.bankName;
+      merchantConfig.accountNumber = document.getElementById('settingsMerchantAccNumInput').value.trim() || merchantConfig.accountNumber;
+      merchantConfig.ifsc = document.getElementById('settingsMerchantIfscInput').value.trim() || merchantConfig.ifsc;
+
+      closePayoutSettings();
+      showToast('Payout account updated successfully!');
+    }
+
+    /* Image Detail & Auth Token modals */
+    function openImageDetailModal(imgId) {
+      const img = images.find(i => i.id === imgId);
+      if (!img) return;
+      activeModalImage = img;
+
+      document.getElementById('imageModalTitle').textContent = img.name;
+      document.getElementById('imageModalPreview').src = img.url;
+      document.getElementById('imageModalDirectUrl').value = img.url;
+      document.getElementById('imageModalMdEmbed').value = `![${img.name}](${img.url})`;
+      document.getElementById('imageModalVisibilityBadge').textContent = img.isPublic ? 'Public' : 'Private';
+
+      document.getElementById('imageDetailModal').classList.remove('hidden');
+      document.getElementById('imageDetailModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeImageDetailModal() {
+      document.getElementById('imageDetailModal').classList.add('hidden');
+      document.getElementById('imageDetailModal').classList.remove('flex');
+      activeModalImage = null;
+    }
+
+    function toggleSelectedImagePrivacy() {
+      if (!activeModalImage) return;
+      toggleImagePrivacy(activeModalImage.id);
+      activeModalImage.isPublic = !activeModalImage.isPublic;
+      document.getElementById('imageModalVisibilityBadge').textContent = activeModalImage.isPublic ? 'Public' : 'Private';
+    }
+
+    function deleteSelectedImage() {
+      if (!activeModalImage) return;
+      deleteImageById(activeModalImage.id);
+      closeImageDetailModal();
+    }
+
+    function openTokenModal() {
+      const payload = btoa(JSON.stringify({ sub: user.email, role: user.role, plan: user.plan }));
+      document.getElementById('tokenJwtHeaderContent').textContent = `Bearer eyJhbGciOiJIUzI1NiJ9.${payload}.sig_9x8f2`;
+      document.getElementById('tokenModal').classList.remove('hidden');
+      document.getElementById('tokenModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeTokenModal() {
+      document.getElementById('tokenModal').classList.add('hidden');
+      document.getElementById('tokenModal').classList.remove('flex');
+    }
+
+    window.onload = function() {
+      calculateStats();
+      renderRecentUploads();
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
